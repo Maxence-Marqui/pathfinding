@@ -4,7 +4,6 @@ import sys
 import time
 import json
 
-from pygame.sprite import groupcollide
 
 class InputBox:
     def __init__(self, x, y, w, h, text=''):
@@ -109,7 +108,7 @@ columns = small_font.render("Nombre de colonnes",1,(255,255,255))
 launch_label = small_font.render("Appuyez sur espace pour lancer",1,(255,255,255))
 
 breadth_first_button= Button((WIDTH/4*3.25)-(150/2),200,150,50,small_font,"Breadth First",color_button)
-deep_search_first_button= Button((WIDTH/4*3.25)-(150/2),275,150,50,small_font,"Deep Search First",color_button)
+deep_search_first_button= Button((WIDTH/4*3.25)-(150/2),275,150,50,small_font,"Depth Search First",color_button)
 dijkstra_button= Button((WIDTH/4*3.25)-(150/2),350,150,50,small_font,"Dijkstra",color_button)
 A_star_button= Button((WIDTH/4*3.25)-(150/2),425,150,50,small_font,"A*",color_button)
 
@@ -117,7 +116,7 @@ custom_grid_button= Button((WIDTH/10*2)-(175/2),500,175,50,small_font,"Grille cu
 premade_grid_button= Button((WIDTH/10*5)-(175/2),500,175,50,small_font,"Grille prédeterminée",color_button)
 
 launch_button = Button((WIDTH/10*3.5)-(350/2),600,350,50,small_font,"Lancer la simulation",clicked_color_button)
-quit_button = Button(612,700,100,35,small_font,"Quittez",color_button)
+quit_button = Button(612,700,100,35,small_font,"Quitter",color_button)
 
 grayed_buttons_algo = []
 grayed_buttons_grid = []
@@ -131,7 +130,7 @@ map_name_input_box = InputBox((WIDTH/10*8.75)-(175/2),250,174,50)
 save_button = Button((WIDTH/10*8.75)-(175/2),315,175,50,small_font,"Sauvegarder la map",color_button)
 
 breadth_first_button_algo = Button(450,600,125,40,small_font,"Breadth first",color_button)
-deep_first_button_algo = Button(450+150,600,125,40,small_font,"Deep first",color_button)
+deep_first_button_algo = Button(450+150,600,125,40,small_font,"Depth first",color_button)
 dijkstra_button_algo = Button(450,650,125,40,small_font,"Dijkstra",color_button)
 a_star_button_algo = Button(450+150,650,125,40,small_font,"A*",color_button)
 
@@ -491,6 +490,7 @@ def pathfinding(rows, columns,algo,grid):
                     end,starting,finished,generation, back_track,starting_loop= reset_algo(end,starting,finished,generation, back_track)
 
                 if reset_all_button.click(pos):
+            
                     end,start_node,end_node,starting,finished,generation,back_track= reset_all(end,start_node,end_node,starting,finished,generation,back_track)
                     grayed_buttons_algo = []
 
@@ -504,10 +504,16 @@ def pathfinding(rows, columns,algo,grid):
                     dij_back_track = str(0)
                     a_star_back_track = str(0)
 
+
                     start_time_breadth = 0.000
                     start_time_deep = 0.000
                     start_time_dij = 0.000
                     start_time_a_star = 0.000
+
+                    current_time_breadth = start_time_breadth
+                    current_time_deep = start_time_deep
+                    current_time_dij = start_time_dij
+                    current_time_a_star = start_time_a_star
                 
                 if save_button.click(pos):
                     save_map(grid,map_name_input_box.text)
@@ -539,6 +545,7 @@ def pathfinding(rows, columns,algo,grid):
                     if node.color == RED:
                         starting = 0
                         finished = 1
+
                 current_time_breadth = time.time()
                 breadth_count = str(len(visited))
                 breadth_back_track = str(len(back_track))
@@ -561,7 +568,7 @@ def pathfinding(rows, columns,algo,grid):
 
                 current_time_deep = time.time()
                 deep_count = str(len(visited))
-                deep_back_track = str(len(back_track)-1)
+                deep_back_track = str(len(back_track))
             
             if algo == "DIJ":
                 if starting_loop:
@@ -577,9 +584,10 @@ def pathfinding(rows, columns,algo,grid):
                         finished = 1
                         back_track.remove(node)
 
+
                 current_time_dij = time.time()
                 dij_count = str(len(visited))
-                dij_back_track = str(len(back_track)-1)
+                dij_back_track = str(len(back_track))
             
             if algo == "A*":
                 
@@ -604,11 +612,9 @@ def pathfinding(rows, columns,algo,grid):
                         finished = 1
                         back_track.remove(node)
                         
-
-
                 current_time_a_star = time.time()
                 a_star_count = str(len(visited))
-                a_star_back_track = str(len(back_track))
+                a_star_back_track = str(len(back_track))      
 
         if not starting and not finished:
             start_node, end_node = coloring(grid,start_node,end_node)
@@ -667,7 +673,9 @@ def deep_first(grid,explored_next,visited,end,generation,current_node,back_track
         
         visited.append(current_node)
         explored_next.remove(current_node)
-        current_node = explored_next[0]
+        
+        if explored_next:
+            current_node = explored_next[0]
 
         for node in visited:
             node.explored()
@@ -828,7 +836,6 @@ def main_menu():
                 if custom_grid_button.click(pos):
                     if row_input_box.text and column_input_box.text:
                         try:
-
                             grid_columns,grid_row = int(row_input_box.text),int(column_input_box.text)
                             for button in grayed_buttons_grid:
                                 button.color = color_button
@@ -849,7 +856,7 @@ def main_menu():
                         grayed_buttons_grid.append(premade_grid_button)
                 
                 if launch_button.click(pos):
-                    if algo and grid_columns and grid_row:
+                    if grid_columns and grid_row:
                         for button in grayed_buttons_grid:
                             button.color = color_button
                         for button in grayed_buttons_algo:
@@ -909,7 +916,7 @@ def load_map():
     y = 100
     grid = 0
 
-    current_map = ""
+    current_map = "Pas de map choisie"
     actual_choice = small_font.render(current_map, 1, (255,255,255))
     validate_button = Button(750/2-125,660,200,50,small_font,"Valider la map",color_button)
 
